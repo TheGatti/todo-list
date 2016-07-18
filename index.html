@@ -1,35 +1,46 @@
 <!DOCTYPE html>
 <html>
-  <head>
+
+<head>
     <meta charset="utf-8">
     <title>My To Do List</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.1.1/normalize.css" media="screen" title="no title" charset="utf-8">
     <link rel="stylesheet" href="styles.css" media="screen" title="no title" charset="utf-8">
-  </head>
-  <body>
-    <body>
-<div class="wrapper">
+</head>
 
-<div class="big_box">
- <input class="submit" name="submit-key" placeholder="submit-key" type="submit">
- <input class="reminder" name="Todo" placeholder="What do you need to do??" type="text"> 
+<body>
+    <div class="pageContainer">
 
- <p>
+        <header>
+            <h2>DO THESE THINGS!</h2>
+        </header>
 
- </p>
+        <div class="inputs">
+            <form class="">
+                <input class="input-field" type="text" name="typetext" value="" placeholder="Enter your to-do here!" />
+                <ul>
 
- <div class="button-container">
-   <input type="button" name="name" value="All">
-   <input type="button" name="name" value="Active">
-   <input type="button" name="name" value="Completed">
-   <input type="button" name="name" value="Clear Completed">
- </div>
+                </ul>
 
-</div>
-</div>
-    <footer></footer>
+            </form>
+        </div>
+
+        <div class="whatsLeft">
+            <h3></h3>
+        </div>
+
+
+        <div class="">
+            <h6>(Click item to edit)</h6>
+        </div>
+
+
+    </div>
+
     <script src="node_modules/jquery/dist/jquery.js"></script>
     <script src="node_modules/underscore/underscore.js" charset="utf-8"></script>
     <script src="app.js" charset="utf-8"></script>
     <script src="package.json" charset="utf-8"></script>
-  </body>
+</body>
+
 </html>

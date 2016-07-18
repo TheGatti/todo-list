@@ -1,192 +1,115 @@
 $(document).ready(function() {
-  blogPage.init();
+  toDoPage.init();
 })
 
-var blogPage = {
+var toDoPage = {
   url: 'http://tiny-tiny.herokuapp.com/collections/tomaybedo',
-  blogs: [],
+  thingstoDo: [],
   init: function() {
-    blogPage.styling();
-    blogPage.events();
+    toDoPage.styling();
+    toDoPage.events();
   },
   styling: function() {
-    blogPage.getBlogs();
+    toDoPage.getToDos();
   },
   events: function() {
-    //Submit Edit
-    $('body').on('click', '.submit', function(event) {
-      event.preventDefault();
-      var $submit = $('.reminder')
-      var objToSubmit = {
-        isDone:false,
-        description:$(".reminder").val()
-      }
-      console.log("TEST", objToUpdate)
-      blogPage.updateBlog(objToUpdate)
-      $edit.remove();
+      //Add New ToDo to the page
+      $('form').on('submit', function(event){
+       event.preventDefault();
+       var newToDo = {
+         todo: $(this).children('input').val(),
+         completed: false
+       }
+       toDoPage.createToDo(newToDo)
+       $(this).children('input').val('');
+     })
+      $('ul').on('keypress', 'li',function(event){
+        if (event.which === 13) {
+          event.preventDefault();
+          var update = $(this).data('id');
+          var newText = $(this).text();
+          var newCompleted = $(this).data('completed');
+          var objToUpdate = {
+           _id: update,
+           todo: newText,
+           completed: newCompleted,
+         }
+         console.log("TEST", objToUpdate)
+         toDoPage.updateToDos(objToUpdate)
 
-
-    })
-
-    // Show Edit Fields
-    $('.blogs').on('click','.edit',function(event) {
-      event.preventDefault();
-      var that = this;
-      $.ajax({
-        method: 'GET',
-        url: blogPage.url + "/" + $(that).parent().data('id'),
-        success: function(data) {
-          var htmlToAppend = blogPage.htmlGenerator(blogTemplates.edit,data)
-          $(that).parent().append(htmlToAppend)
-        },
-        error: function(err) {
-          console.error("NO LIKEY", err);
         }
       })
 
-    })
+  //Delete ToDo item
+   $('ul').on('click', 'a', function(event){
+     event.preventDefault();
+     var deleteToDoId = $(this).parent().data('id');
+     console.log("cleared",deleteToDoId);
+     $(this).parent().remove();
+     toDoPage.deleteToDos(deleteToDoId);
+   })
+ },
 
-    //Add New Post
-    $("form button").on('click', function(event) {
-      event.preventDefault();
-      var newBlogPost = {
-        isDone:false,
-        description:$(".reminder").val()
-      };
-      blogPage.createBlog(newBlogPost);
-      $('.reminder').val("");
-    })//end click event
-
-    //Change pages
-    $('header nav li').on('click', function(event) {
-      event.preventDefault();
-      var thingWeClickText = $(this).text();
-      var ourClassToShow = "." + thingWeClickText.toLowerCase();
-
-      if(thingWeClickText.toLowerCase() === 'home') {
-        $(ourClassToShow).removeClass('hidden')
-        $(ourClassToShow).siblings().addClass('hidden')
-      } else {
-        var htmlStr = blogPage.htmlGenerator(blogTemplates[thingWeClickText.toLowerCase()])
-        $(ourClassToShow).removeClass('hidden').append(htmlStr);
-        $(ourClassToShow).siblings().addClass('hidden')
-      }
-    })
-
-    $('.blogs').on('click','.delete', function(event) {
-      event.preventDefault();
-      var blogId = $(this).parent().data('id');
-      blogPage.deleteBlog(blogId);
-    })
-  },
-
-  createBlog: function(blog) {
-    $.ajax({
-      url: blogPage.url,
-      method: "POST",
-      data: blog,
-      success: function(data) {
-        console.log("WE CREATED SOMETHING", data);
-        var htmlStr = blogPage.htmlGenerator(blogTemplates.blogTmpl,data)
-        blogPage.blogs.push(data);
-        $('.blogs ul').append(htmlStr);
-
-      },
-      error: function(err) {
-        console.error("OH CRAP", err);
-      }
-    })
-  },
-
-  updateBlog: function(blog) {
-
-    $.ajax({
-      method: 'PUT',
-      url: blogPage.url + "/" + blog.id,
-      data: blog,
-      success: function(data) {
-        console.log("UPDATED SUCCESSFULLY!!!", data);
-        blogPage.getBlogs();
-      },
-      error: function(err) {
-        console.error("I HAVE NO IDEA WHATS GOIGN ON", err);
-      }
-    })
-  },
-
-  getBlogs: function() {
-    $.ajax({
-      url: blogPage.url,
-      method: "GET",
-      success: function(data) {
-        console.log("WE GOT SOMETHING", data);
-        $('.blogs ul').html("");
-        data.forEach(function(element,idx) {
-          var blogHtmlStr = blogPage.htmlGenerator(blogTemplates.blogTmpl,element);
-          $('.blogs ul').append(blogHtmlStr)
-          blogPage.blogs.push(element);
-        });
-      },
-      error: function(err) {
-        console.error("OH CRAP", err);
-      }
-    })
-  },
-  deleteBlog: function(blogId) {
-    // find blog to delete from our blog data;
-    var deleteUrl = blogPage.url + "/" + blogId;
-    $.ajax({
-      url: deleteUrl,
-      method: "DELETE",
-      success: function(data) {
-        console.log("WE DELETED SOMETHING", data);
-        blogPage.getBlogs();
-      },
-      error: function(err) {
-        console.error("OH CRAP", err);
-      }
-    })
-  },
-
-  templification: function(template) {
-    return _.template(template);
-  },
-
-  htmlGenerator: function(template,data) {
-    var tmpl = blogPage.templification(template);
-    return tmpl(data);
-  }
-
-};
-
-
-var blogTemplates = {
-    blogTmpl: `
-      <li data-id='<%= _id %>'>
-        <%= isDone %>
-        <br>
-          <button class="delete">Delete</button>
-          <button class="edit">Edit</button>
-      </li>
-    `,
-    about: `
-        <h1>This is the about page</h1>
-        <p>
-          We are at the same level as the law.
-        </p>
-    `,
-    contact:`
-            <h1>Please do not contact me</h1>
-            <p>
-              I am above the law.
-            </p>
-    `,
-    edit: `
-      <div id="edit-fields" data-id='<%= _id %>'>
-        <input type="text" name="title" value="<%= title %>" />
-        <textarea><%= content %></textarea>
-        <input name="author" type="text" value="<%= author %>" />
-        <input type="submit" value="EDIT ME" id="change-btn" />
-      </div>
-    `
-  }
+ createToDo: function(newToDo) {
+   $.ajax({
+     url: toDoPage.url,
+     method: "POST",
+     data: newToDo,
+     success: function(data){
+       console.log("To-Do added woooooooo!!!",data);
+       $('form ul').append(`<li contenteditable="true" data-id="${data._id}" data-completed="${data.completed}"><a href="">&#10008;</a>${data.todo}</li>`);
+       toDoPage.thingstoDo.push(data);
+     },
+     error: function(err) {
+       console.error("To-do NOT added, damnit");
+     }
+   })
+ },
+ getToDos: function() {
+   $.ajax({
+     url: toDoPage.url,
+     method: "GET",
+     success: function(data){
+       console.log("Server got To-do",data);
+       $('.whatsLeft').find('h3').text('toDos Left: ' + data.length);
+       $('form ul').html("")
+       data.forEach(function(element){
+         toDoPage.thingstoDo.push(element);
+        $('form ul').append(`<li contenteditable="true" data-id="${element._id}" data-completed="${element.completed}"><a href="#">&#10008;</a>${element.todo}</li>`);
+       })
+     },
+     error: function(err) {
+       console.error("C'mon Server!");
+     }
+   })
+ },
+ updateToDos: function(updateToDos){
+  var updateUrl = toDoPage.url + "/" + updateToDos._id;
+  $.ajax({
+    url: updateUrl,
+    method: "PUT",
+    data: updateToDos,
+    success: function(data){
+      console.log("Edited to-do",data);
+      toDoPage.getToDos();
+    },
+    error: function(err) {
+      console.error("Could not edit to-do");
+    }
+  })
+},
+deleteToDos: function(deleteToDoId) {
+  var deleteUrl = toDoPage.url + "/" + deleteToDoId;
+  $.ajax({
+    url: deleteUrl,
+    method: "DELETE",
+    success: function(){
+      console.log("see-ya to-do!");
+      toDoPage.getToDos();
+    },
+    error: function(err) {
+      console.error("didn't delete to-do. argh.");
+    }
+})
+}
+}
